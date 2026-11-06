@@ -775,8 +775,8 @@
             <span class="slider-label">Final String Radius (r<sub>f</sub>)</span>
             <span class="slider-val" id="lbl-rf">0.050 m (10.0×)</span>
           </div>
-          <input type="range" id="sl-rf" min="0.005" max="1.500" step="0.005" value="0.05" oninput="onSliderChange()" />
-          <div class="slider-minmax"><span>0.005 m</span><span>Default: 0.05 m</span><span>1.50 m</span></div>
+          <input type="range" id="sl-rf" min="0.005" max="3.000" step="0.005" value="0.05" oninput="onSliderChange()" />
+          <div class="slider-minmax"><span>0.005 m</span><span>Default: 0.05 m</span><span>3.00 m</span></div>
         </div>
 
         <div class="slider-item">
@@ -894,8 +894,8 @@
           <button id="btn-zerog-tab" class="btn" style="margin-top: 4px; width: 100%; font-size: 0.71rem;" onclick="toggleZeroGravity()" title="Toggle gravitational acceleration between Earth (9.81 m/s²) and Zero-G Space (0 m/s²)">
             <span id="zerog-tab-text">Zero-G (Space): OFF</span>
           </button>
-          <button id="btn-grav-mode-tab" class="btn" style="margin-top: 4px; width: 100%; font-size: 0.71rem;" onclick="toggleGravityModel()" title="Toggle between the Paper's Planar ODE Model (OFF) and the Realistic 3D Conical Gravity Coupled ODE Model (ON)">
-            <span id="grav-mode-tab-text">3D Coupled Gravity: OFF</span>
+          <button id="btn-grav-mode-tab" class="btn btn-active" style="margin-top: 4px; width: 100%; font-size: 0.71rem;" onclick="toggleGravityModel()" title="Toggle between the Paper's Planar ODE Model (OFF) and the Realistic 3D Conical Gravity Coupled ODE Model (ON)">
+            <span id="grav-mode-tab-text">3D Coupled Gravity: ON</span>
           </button>
         </div>
       </div>
@@ -986,8 +986,8 @@
         <button id="btn-zerog-top" class="btn" onclick="toggleZeroGravity()" title="Toggle gravitational acceleration between Earth (9.81 m/s²) and Zero-G Space (0 m/s²)">
           <span id="zerog-top-text">Zero-G (Space): OFF</span>
         </button>
-        <button id="btn-grav-mode-top" class="btn" onclick="toggleGravityModel()" title="Toggle between the Paper's Planar ODE Model (OFF) and the Realistic 3D Conical Gravity Coupled ODE Model (ON)">
-          <span id="grav-mode-top-text">3D Coupled Gravity: OFF</span>
+        <button id="btn-grav-mode-top" class="btn btn-active" onclick="toggleGravityModel()" title="Toggle between the Paper's Planar ODE Model (OFF) and the Realistic 3D Conical Gravity Coupled ODE Model (ON)">
+          <span id="grav-mode-top-text">3D Coupled Gravity: ON</span>
         </button>
       </div>
 
@@ -1223,7 +1223,7 @@
     rho: 1.225,            // Air density (kg/m^3)
     g: 9.81,               // Gravitational acceleration (m/s^2), 0 = Zero-G Space
     savedG: 9.81,          // Saved non-zero gravitational acceleration for Space Mode toggle
-    gravityCoupled: false, // Default false = Paper Planar ODE Model; true = 3D Conical Gravity Coupled ODE Model
+    gravityCoupled: true,  // Default true = 3D Conical Gravity Coupled ODE Model; false = Paper Planar ODE Model
     wobbleEnabled: true,
     idealMode: false,
     coaeMode: false
@@ -1362,7 +1362,7 @@
    * where inward spin-up driving torque equals resistive braking: tau_spin-up(r, w) + tau_net(r, w) = 0
    */
   function solveLocalEquilibriumOmega(r, drdt, p) {
-    if (p.idealMode || p.coaeMode || drdt >= 0) return Infinity;
+    if (p.idealMode || p.coaeMode || drdt >= -1e-9) return Infinity;
     const drdtAbs = Math.abs(drdt);
 
     const rBall = 0.5 * p.d;
@@ -1385,7 +1385,10 @@
         return spinFactor - (dampTerm + quadTerm);
       }
 
-      if (fRatePlanar(0.001) <= 0) return 0.0;
+      if (fRatePlanar(0.001) <= 0) {
+        // Where resistive torque already exceeds spin-up, let RK4 decelerate naturally
+        return Infinity;
+      }
 
       let lo = 0.001;
       let hi = 100000.0;
@@ -1445,6 +1448,7 @@
           FcBound_f = p.kwrist * (Req_bound - p.R0);
           omegaBound_f = Math.sqrt(FcBound_f / (p.m * p.rf));
         } else {
+          Req_bound = p.R0;
           FcBound_f = 0.0;
           omegaBound_f = 0.0;
         }
@@ -1564,6 +1568,7 @@
 
     // PHASE 1: INWARD PULL (0 < t <= dtPull)
     const numPullSteps = Math.round(p.dtPull / dtStep);
+    let hasBeenBelowEq = false;
     for (let step = 1; step <= numPullSteps; step++) {
       for (let s = 0; s < subSteps; s++) {
         const prevOmega = omega;
@@ -1579,6 +1584,9 @@
           omega = omega_i * (p.ri / r);
         } else {
           const wEq = solveLocalEquilibriumOmega(r, drdtPull, p);
+          if (isFinite(wEq) && omega <= wEq) {
+            hasBeenBelowEq = true;
+          }
           const wasAboveEq = isFinite(wEq) && (omega >= wEq);
           const k1 = accelOmega(r0, drdtPull, omega, false);
           const k2 = accelOmega(rMid, drdtPull, Math.max(0.0, omega + 0.5 * h * k1), false);
@@ -1590,7 +1598,7 @@
           if (isFinite(wEq)) {
             if (wasAboveEq && omega < wEq) {
               omega = wEq;
-            } else if (omega > wEq) {
+            } else if (hasBeenBelowEq && omega > wEq) {
               const alpha = Math.min(1.0, h / 0.02);
               omega = omega + (wEq - omega) * alpha;
             }
@@ -3669,7 +3677,7 @@
     params.coaeMode = false;
     params.omegaRPM_i = parseFloat(document.getElementById('sl-omega-i').value);
     params.ri = parseFloat(document.getElementById('sl-ri').value);
-    params.rf = Math.max(0.005, Math.min(params.ri - 0.005, parseFloat(document.getElementById('sl-rf').value)));
+    params.rf = Math.max(0.005, Math.min(params.ri, parseFloat(document.getElementById('sl-rf').value)));
     document.getElementById('sl-rf').value = params.rf;
 
     params.dtPull = parseFloat(document.getElementById('sl-dt').value);
@@ -3743,7 +3751,7 @@
     params.g = DEFAULT_G_ACCEL;
     params.savedG = DEFAULT_G_ACCEL;
     if (presetKey === 'paper') {
-      params.gravityCoupled = false;
+      params.gravityCoupled = true;
     }
     params.wobbleEnabled = true;
     params.idealMode = false;
