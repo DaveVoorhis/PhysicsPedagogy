@@ -1084,7 +1084,6 @@
           <div class="panel-title">Angular Velocity | Radii | String Tension</div>
           <div class="panel-subtitle">Live telemetry</div>
         </div>
-        <span id="tel-time-badge" class="badge-pill">t = 0.00 s</span>
       </div>
 
       <div class="telemetry-grid-3">
@@ -3532,7 +3531,6 @@
     // Scrubber & time badges
     document.getElementById('lbl-sim-time').textContent = snap.t.toFixed(2);
     document.getElementById('scrubber-slider').value = snap.t;
-    document.getElementById('tel-time-badge').textContent = `t = ${snap.t.toFixed(2)} s`;
 
     // Card 1: Angular Velocity | Radii | String Tension
     const rpmStr = snap.rpm >= 1000 ? Math.round(snap.rpm).toLocaleString() : snap.rpm.toFixed(1);
