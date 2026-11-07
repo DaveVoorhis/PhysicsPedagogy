@@ -1012,7 +1012,7 @@
 
       <!-- Timeline Scrubber Row -->
       <div class="scrubber-row">
-          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-sky); min-width: 78px;">
+          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-sky); white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums; min-width: 12ch; display: inline-block;">
             t = <strong id="lbl-sim-time">0.00</strong> s
           </span>
         <input type="range" id="scrubber-slider" min="0" max="5" step="0.01" value="0" oninput="onScrubTime(this.value)" />
