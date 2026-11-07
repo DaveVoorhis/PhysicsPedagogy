@@ -791,9 +791,9 @@
         <div class="slider-item">
           <div class="slider-top">
             <span class="slider-label">Ball Mass (m)</span>
-            <span class="slider-val" id="lbl-m">0.050 kg (50 g)</span>
+            <span class="slider-val" id="lbl-ball-mass">0.050 kg (50 g)</span>
           </div>
-          <input type="range" id="sl-m" min="0.001" max="1.000" step="0.001" value="0.050" oninput="onSliderChange()" />
+          <input type="range" id="sl-ball-mass" min="0.001" max="1.000" step="0.001" value="0.050" oninput="onSliderChange()" />
           <div class="slider-minmax"><span>1 g</span><span>Default: 50 g</span><span>1000 g (1 kg)</span></div>
         </div>
 
@@ -812,18 +812,18 @@
         <div class="slider-item">
           <div class="slider-top">
             <span class="slider-label">Co-Orbiting Hand Mass (M)</span>
-            <span class="slider-val" id="lbl-M">1.00 kg</span>
+            <span class="slider-val" id="lbl-hand-mass">1.00 kg</span>
           </div>
-          <input type="range" id="sl-M" min="0.00" max="10.00" step="0.05" value="1.00" oninput="onSliderChange()" />
+          <input type="range" id="sl-hand-mass" min="0.00" max="10.00" step="0.05" value="1.00" oninput="onSliderChange()" />
           <div class="slider-minmax"><span>0.0 kg</span><span>Default: 1.00 kg</span><span>10.00 kg</span></div>
         </div>
 
         <div class="slider-item">
           <div class="slider-top">
             <span class="slider-label">Baseline Hand Wobble (R<sub>0</sub>)</span>
-            <span class="slider-val" id="lbl-R0">10.0 mm (0.010 m)</span>
+            <span class="slider-val" id="lbl-wobble-r0">10.0 mm (0.010 m)</span>
           </div>
-          <input type="range" id="sl-R0" min="0.000" max="0.100" step="0.001" value="0.010" oninput="onSliderChange()" />
+          <input type="range" id="sl-wobble-r0" min="0.000" max="0.100" step="0.001" value="0.010" oninput="onSliderChange()" />
           <div class="slider-minmax"><span>0 mm</span><span>Default: 10.0 mm</span><span>100 mm</span></div>
         </div>
 
@@ -932,8 +932,8 @@
         <tr>
           <td>Wobble R<sub>eq</sub></td>
           <td class="mono" style="color: var(--text-dim);">0.0 mm</td>
-          <td class="mono" id="tbl-bound-R" style="color: var(--accent-purple);">12.0 mm</td>
-          <td class="mono" id="tbl-sim-R" style="color: var(--accent-amber); font-weight: 700; text-align: right;">11.6 mm</td>
+          <td class="mono" id="tbl-bound-wobble" style="color: var(--accent-purple);">12.0 mm</td>
+          <td class="mono" id="tbl-sim-wobble" style="color: var(--accent-amber); font-weight: 700; text-align: right;">11.6 mm</td>
         </tr>
         <tr>
           <td>L<sub>sys</sub> Retained</td>
@@ -1098,9 +1098,9 @@
         <!-- Radii (String r & Wobble R) -->
         <div class="metric-card">
           <div class="metric-label">Radii (r &amp; R)</div>
-          <div class="metric-primary" style="color: #ffffff;" id="tel-r">0.500 <span style="font-size:0.7rem;">m</span></div>
-          <div class="metric-sub" style="color: var(--accent-amber);" id="tel-R">Wobble R: 10.8 mm</div>
-          <div class="metric-sub" id="tel-dR">Yield ΔR: +0.8 mm</div>
+          <div class="metric-primary" style="color: #ffffff;" id="tel-str-r">0.500 <span style="font-size:0.7rem;">m</span></div>
+          <div class="metric-sub" style="color: var(--accent-amber);" id="tel-wobble-r">Wobble R: 10.8 mm</div>
+          <div class="metric-sub" id="tel-yield-dr">Yield ΔR: +0.8 mm</div>
         </div>
 
         <!-- String Tension Fc -->
@@ -3470,7 +3470,7 @@
     document.getElementById('tbl-bound-fc').textContent = s.boundFc >= 100
             ? Math.round(s.boundFc).toLocaleString() + ' N'
             : s.boundFc.toFixed(1) + ' N';
-    document.getElementById('tbl-bound-R').textContent = s.boundR_mm.toFixed(1) + ' mm';
+    document.getElementById('tbl-bound-wobble').textContent = s.boundR_mm.toFixed(1) + ' mm';
     document.getElementById('tbl-bound-lsys').textContent = s.boundLsysPct.toFixed(1) + '%';
     document.getElementById('tbl-bound-lball').textContent = s.boundLballPct.toFixed(2) + '%';
 
@@ -3478,7 +3478,7 @@
     document.getElementById('tbl-sim-fc').textContent = s.simPeakFc >= 100
             ? Math.round(s.simPeakFc).toLocaleString() + ' N'
             : s.simPeakFc.toFixed(1) + ' N';
-    document.getElementById('tbl-sim-R').textContent = s.simPeakR_mm.toFixed(1) + ' mm';
+    document.getElementById('tbl-sim-wobble').textContent = s.simPeakR_mm.toFixed(1) + ' mm';
     document.getElementById('tbl-sim-lsys').textContent = s.simLsysPct.toFixed(1) + '%';
     document.getElementById('tbl-sim-lball').textContent = s.simLballPct.toFixed(2) + '%';
 
@@ -3538,9 +3538,9 @@
     document.getElementById('tel-rads').textContent = `${snap.omega.toFixed(2)} rad/s (${(snap.omega / (2 * Math.PI)).toFixed(2)} rev/s)`;
     document.getElementById('tel-ideal-rpm').textContent = `Ideal: ${Math.round(snap.rpmIdeal).toLocaleString()} RPM`;
 
-    document.getElementById('tel-r').innerHTML = `${snap.r.toFixed(3)} <span style="font-size:0.7rem;">m</span>`;
-    document.getElementById('tel-R').textContent = `Wobble R: ${(snap.R * 1000).toFixed(2)} mm`;
-    document.getElementById('tel-dR').textContent = `Yield ΔR: +${(snap.deltaR * 1000).toFixed(2)} mm`;
+    document.getElementById('tel-str-r').innerHTML = `${snap.r.toFixed(3)} <span style="font-size:0.7rem;">m</span>`;
+    document.getElementById('tel-wobble-r').textContent = `Wobble R: ${(snap.R * 1000).toFixed(2)} mm`;
+    document.getElementById('tel-yield-dr').textContent = `Yield ΔR: +${(snap.deltaR * 1000).toFixed(2)} mm`;
 
     const fcLabelEl = document.getElementById('tel-fc-label');
     if (fcLabelEl) {
@@ -3653,11 +3653,11 @@
     document.getElementById('lbl-rf').textContent = `${params.rf.toFixed(3)} m (${(params.ri / params.rf).toFixed(1)}×)`;
     const drdt = Math.abs(params.ri - params.rf) / params.dtPull;
     document.getElementById('lbl-dt').textContent = `${params.dtPull.toFixed(2)} s (|dr/dt|=${drdt.toFixed(2)} m/s)`;
-    document.getElementById('lbl-m').textContent = `${params.m.toFixed(3)} kg (${Math.round(params.m * 1000)} g)`;
+    document.getElementById('lbl-ball-mass').textContent = `${params.m.toFixed(3)} kg (${Math.round(params.m * 1000)} g)`;
     document.getElementById('lbl-d').textContent = `${params.d.toFixed(3)} m (${(params.d * 100).toFixed(1)} cm)`;
 
-    document.getElementById('lbl-M').textContent = `${params.M.toFixed(2)} kg`;
-    document.getElementById('lbl-R0').textContent = `${(params.R0 * 1000).toFixed(1)} mm (${params.R0.toFixed(3)} m)`;
+    document.getElementById('lbl-hand-mass').textContent = `${params.M.toFixed(2)} kg`;
+    document.getElementById('lbl-wobble-r0').textContent = `${(params.R0 * 1000).toFixed(1)} mm (${params.R0.toFixed(3)} m)`;
     document.getElementById('lbl-cwrist').textContent = `${params.cwrist.toFixed(3)} N·m·s/rad`;
     document.getElementById('lbl-kwrist').textContent = `${Math.round(params.kwrist)} N/m`;
     document.getElementById('lbl-ell').textContent = `${params.ell.toFixed(3)} m (${(params.ell * 100).toFixed(1)} cm)`;
@@ -3679,11 +3679,11 @@
     document.getElementById('sl-rf').value = params.rf;
 
     params.dtPull = parseFloat(document.getElementById('sl-dt').value);
-    params.m = parseFloat(document.getElementById('sl-m').value);
+    params.m = parseFloat(document.getElementById('sl-ball-mass').value);
     params.d = parseFloat(document.getElementById('sl-d').value);
 
-    params.M = parseFloat(document.getElementById('sl-M').value);
-    params.R0 = parseFloat(document.getElementById('sl-R0').value);
+    params.M = parseFloat(document.getElementById('sl-hand-mass').value);
+    params.R0 = parseFloat(document.getElementById('sl-wobble-r0').value);
     params.cwrist = parseFloat(document.getElementById('sl-cwrist').value);
     params.kwrist = parseFloat(document.getElementById('sl-kwrist').value);
     params.ell = parseFloat(document.getElementById('sl-ell').value);
@@ -3789,10 +3789,10 @@
     document.getElementById('sl-ri').value = params.ri;
     document.getElementById('sl-rf').value = params.rf;
     document.getElementById('sl-dt').value = params.dtPull;
-    document.getElementById('sl-m').value = params.m;
+    document.getElementById('sl-ball-mass').value = params.m;
     document.getElementById('sl-d').value = params.d;
-    document.getElementById('sl-M').value = params.M;
-    document.getElementById('sl-R0').value = params.R0;
+    document.getElementById('sl-hand-mass').value = params.M;
+    document.getElementById('sl-wobble-r0').value = params.R0;
     document.getElementById('sl-cwrist').value = params.cwrist;
     document.getElementById('sl-kwrist').value = params.kwrist;
     document.getElementById('sl-ell').value = params.ell;
